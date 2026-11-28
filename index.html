@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WinTune — Ultimate Windows 11 Optimization</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        graphite: '#0a0a0f',
+                        surface: '#12121a',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Кастомные стили и анимации -->
+    <style>
+        body {
+            background-color: #0a0a0f;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* Красивый скроллбар */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0f; }
+        ::-webkit-scrollbar-thumb { background: #2d2d3d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4c4c66; }
+
+        /* Живой фон (Анимированные градиенты) */
+        .bg-blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(140px);
+            z-index: -1;
+            opacity: 0.3;
+            animation: float 15s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .blob-1 {
+            top: -15%; left: -10%;
+            width: 60vw; height: 60vw;
+            background: radial-gradient(circle, #8b5cf6 0%, transparent 60%);
+        }
+        .blob-2 {
+            bottom: -15%; right: -10%;
+            width: 70vw; height: 70vw;
+            background: radial-gradient(circle, #3b82f6 0%, transparent 60%);
+            animation-delay: -7s;
+        }
+        .blob-3 {
+            top: 30%; left: 30%;
+            width: 40vw; height: 40vw;
+            background: radial-gradient(circle, #d946ef 0%, transparent 60%);
+            animation-duration: 20s;
+            opacity: 0.15;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(80px, 40px) scale(1.1); }
+        }
+
+        /* Очень плавная анимация появления при скролле */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: opacity, transform;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Стеклянные карточки (Glassmorphism) */
+        .glass-card {
+            background: rgba(18, 18, 26, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Свечение и подъем карточек преимуществ */
+        .feature-card:hover {
+            transform: translateY(-8px);
+            background: rgba(25, 25, 36, 0.8);
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 30px -5px rgba(139, 92, 246, 0.2);
+        }
+
+        /* Модальное окно */
+        .modal-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            backdrop-filter: blur(8px);
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            transform: scale(0.95) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        /* Toast Уведомление */
+        .toast {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translate(-50%, -150%);
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 100;
+        }
+        .toast.show {
+            transform: translate(-50%, 0);
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col relative selection:bg-fuchsia-500/30 selection:text-white">
+
+    <!-- Живой фон -->
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+    <div class="bg-blob blob-3"></div>
+
+    <!-- Шапка (Header) -->
+    <header class="fixed w-full top-0 z-50 border-b border-white/5 bg-graphite/60 backdrop-blur-xl transition-all">
+        <div class="container mx-auto px-6 h-20 flex items-center justify-between">
+            <!-- Логотип -->
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-blue-600 flex items-center justify-center shadow-lg shadow-violet-500/20 group-hover:scale-105 transition-transform duration-300">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <span class="text-xl font-bold tracking-tight text-white">Win<span class="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-blue-400">Tune</span></span>
+            </a>
+
+            <!-- Навигация -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
+                <a href="#features" class="hover:text-white transition-colors duration-300" data-i18n="nav_features">Возможности</a>
+                <a href="#screenshots" class="hover:text-white transition-colors duration-300" data-i18n="nav_screenshots">Интерфейс</a>
+            </nav>
+
+            <!-- Правая часть шапки (Язык + Кнопка) -->
+            <div class="flex items-center gap-4">
+                <!-- Переключатель языков -->
+                <div class="relative">
+                    <button id="langBtn" class="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-sm font-medium text-slate-300 hover:text-white group cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                        <span id="currentLangText">RU</span>
+                    </button>
+                    <!-- Выпадающий список -->
+                    <div id="langMenu" class="absolute right-0 mt-2 w-36 bg-surface/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl hidden flex-col py-2 z-50 overflow-hidden">
+                        <button onclick="setLanguage('ru')" class="text-left px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/10 transition-colors">🇷🇺 Русский</button>
+                        <button onclick="setLanguage('en')" class="text-left px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/10 transition-colors">🇬🇧 English</button>
+                        <button onclick="setLanguage('es')" class="text-left px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/10 transition-colors">🇪🇸 Español</button>
+                        <button onclick="setLanguage('de')" class="text-left px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/10 transition-colors">🇩🇪 Deutsch</button>
+                        <button onclick="setLanguage('fr')" class="text-left px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/10 transition-colors">🇫🇷 Français</button>
+                        <button onclick="setLanguage('zh')" class="text-left px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/10 transition-colors">🇨🇳 中文</button>
+                    </div>
+                </div>
+
+                <!-- Кнопка Скачать (В шапке) -->
+                <button class="download-trigger hidden md:flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-sm font-medium text-white group">
+                    <span data-i18n="header_download">Скачать</span>
+                    <svg class="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Главный экран (Hero) -->
+    <main class="flex-grow pt-40 pb-24 relative z-10">
+        <section class="container mx-auto px-6 text-center max-w-4xl">
+            <div class="reveal">
+                <!-- Бейдж -->
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-10 text-sm text-slate-300 font-medium">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
+                    </span>
+                    <span data-i18n="hero_badge">Версия 1.0 уже доступна</span>
+                </div>
+                
+                <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-white mb-8 leading-[1.15]">
+                    <span data-i18n="hero_title_1">WinTune —</span> <br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-fuchsia-400 to-blue-400" data-i18n="hero_title_2">Ультимативная оптимизация</span><br/>
+                    <span data-i18n="hero_title_3">Windows 11</span>
+                </h1>
+                
+                <p class="text-lg md:text-xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed font-light" data-i18n="hero_subtitle">
+                    Верните контроль над своей системой: отключите телеметрию, ускорьте игры и настройте интерфейс в один клик. Никакого мусора, только чистый C# и безопасность.
+                </p>
+                
+                <!-- Главная кнопка с живой градиентной рамкой -->
+                <button class="download-trigger relative group rounded-xl p-[1px] overflow-hidden mx-auto w-full md:w-auto inline-flex">
+                    <span class="absolute inset-0 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-blue-600 rounded-xl opacity-60 group-hover:opacity-100 blur-md transition-all duration-500 animate-[pulse_3s_ease-in-out_infinite]"></span>
+                    <span class="absolute inset-0 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-blue-600 rounded-xl opacity-100 group-hover:scale-105 transition-all duration-500"></span>
+                    
+                    <div class="relative px-10 py-4 bg-[#0a0a0f] rounded-xl group-hover:bg-transparent transition-all duration-300 flex items-center justify-center gap-3 text-white font-semibold text-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        <span data-i18n="hero_btn_download">Скачать бесплатно (64-bit)</span>
+                    </div>
+                </button>
+            </div>
+        </section>
+
+        <!-- Скриншоты (Стеклянная галерея 2x3) -->
+        <section id="screenshots" class="container mx-auto px-6 py-24">
+            <div class="text-center mb-20 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-6" data-i18n="screens_title">Интуитивный интерфейс</h2>
+                <p class="text-slate-400 text-lg max-w-2xl mx-auto" data-i18n="screens_subtitle">Все настройки разложены по полочкам. Просто, понятно и безопасно.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto items-start">
+                
+                <!-- Скриншот 1: image.png -->
+                <div class="reveal rounded-2xl border border-white/10 bg-transparent relative group cursor-pointer hover:-translate-y-2 hover:shadow-[0_0_40px_-10px_rgba(139,92,246,0.3)] hover:border-violet-500/30 transition-all duration-500 overflow-hidden" onclick="openModal('image.png', translations[currentLang]['card1_title'])">
+                    <div class="flex items-center px-5 py-3 bg-white/5 border-b border-white/10">
+                        <div class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/80 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/80 shadow-[0_0_8px_rgba(234,179,8,0.5)]"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+                        </div>
+                        <div class="mx-auto text-xs text-slate-400 font-medium tracking-wide" data-i18n="card1_title">WinTune — Windows 11 (Система, Обновления, Панель задач)</div>
+                    </div>
+                    <img src="image.png" alt="WinTune Windows 11" class="w-full h-auto block rounded-b-xl object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent opacity-0 group-hover:opacity-80 transition-opacity duration-300 flex items-end p-8 pointer-events-none mt-12">
+                        <h3 class="text-xl font-bold text-white translate-y-4 group-hover:translate-y-0 transition-transform duration-300" data-i18n="screens_open_btn">Открыть скриншот</h3>
+                    </div>
+                </div>
+
+                <!-- Скриншот 2: image1.png -->
+                <div class="reveal rounded-2xl border border-white/10 bg-transparent relative group cursor-pointer hover:-translate-y-2 hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] hover:border-blue-500/30 transition-all duration-500 overflow-hidden" style="transition-delay: 100ms;" onclick="openModal('image1.png', translations[currentLang]['card2_title'])">
+                    <div class="flex items-center px-5 py-3 bg-white/5 border-b border-white/10">
+                        <div class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/80 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/80 shadow-[0_0_8px_rgba(234,179,8,0.5)]"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+                        </div>
+                        <div class="mx-auto text-xs text-slate-400 font-medium tracking-wide" data-i18n="card2_title">WinTune — Windows 11 (Приватность, Игры, Дополнительно)</div>
+                    </div>
+                    <img src="image1.png" alt="WinTune Windows 11 Privacy" class="w-full h-auto block rounded-b-xl object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent opacity-0 group-hover:opacity-80 transition-opacity duration-300 flex items-end p-8 pointer-events-none mt-12">
+                        <h3 class="text-xl font-bold text-white translate-y-4 group-hover:translate-y-0 transition-transform duration-300" data-i18n="screens_open_btn">Открыть скриншот</h3>
+                    </div>
+                </div>
+
+                <!-- Скриншот 3: image2.png -->
+                <div class="reveal rounded-2xl border border-white/10 bg-transparent relative group cursor-pointer hover:-translate-y-2 hover:shadow-[0_0_40px_-10px_rgba(139,92,246,0.3)] hover:border-violet-500/30 transition-all duration-500 overflow-hidden" style="transition-delay: 200ms;" onclick="openModal('image2.png', translations[currentLang]['card3_title'])">
+                    <div class="flex items-center px-5 py-3 bg-white/5 border-b border-white/10">
+                        <div class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/80 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/80 shadow-[0_0_8px_rgba(234,179,8,0.5)]"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+                        </div>
+                        <div class="mx-auto text-xs text-slate-400 font-medium tracking-wide" data-i18n="card3_title">WinTune — Универсальное (Система и Телеметрия софта)</div>
+                    </div>
+                    <img src="image2.png" alt="WinTune Universal System" class="w-full h-auto block rounded-b-xl object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent opacity-0 group-hover:opacity-80 transition-opacity duration-300 flex items-end p-8 pointer-events-none mt-12">
+                        <h3 class="text-xl font-bold text-white translate-y-4 group-hover:translate-y-0 transition-transform duration-300" data-i18n="screens_open_btn">Открыть скриншот</h3>
+                    </div>
+                </div>
+
+                <!-- Скриншот 4: image3.png -->
+                <div class="reveal rounded-2xl border border-white/10 bg-transparent relative group cursor-pointer hover:-translate-y-2 hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] hover:border-blue-500/30 transition-all duration-500 overflow-hidden" style="transition-delay: 300ms;" onclick="openModal('image3.png', translations[currentLang]['card4_title'])">
+                    <div class="flex items-center px-5 py-3 bg-white/5 border-b border-white/10">
+                        <div class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/80 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/80 shadow-[0_0_8px_rgba(234,179,8,0.5)]"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+                        </div>
+                        <div class="mx-auto text-xs text-slate-400 font-medium tracking-wide" data-i18n="card4_title">WinTune — Универсальное (Конфиденциальность и Диски)</div>
+                    </div>
+                    <img src="image3.png" alt="WinTune Universal Privacy" class="w-full h-auto block rounded-b-xl object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent opacity-0 group-hover:opacity-80 transition-opacity duration-300 flex items-end p-8 pointer-events-none mt-12">
+                        <h3 class="text-xl font-bold text-white translate-y-4 group-hover:translate-y-0 transition-transform duration-300" data-i18n="screens_open_btn">Открыть скриншот</h3>
+                    </div>
+                </div>
+
+                <!-- Скриншот 5: image4.png -->
+                <div class="reveal rounded-2xl border border-white/10 bg-transparent relative group cursor-pointer hover:-translate-y-2 hover:shadow-[0_0_40px_-10px_rgba(139,92,246,0.3)] hover:border-violet-500/30 transition-all duration-500 overflow-hidden" style="transition-delay: 400ms;" onclick="openModal('image4.png', translations[currentLang]['card5_title'])">
+                    <div class="flex items-center px-5 py-3 bg-white/5 border-b border-white/10">
+                        <div class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/80 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/80 shadow-[0_0_8px_rgba(234,179,8,0.5)]"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+                        </div>
+                        <div class="mx-auto text-xs text-slate-400 font-medium tracking-wide" data-i18n="card5_title">WinTune — Сеть (Настройка параметров адаптера)</div>
+                    </div>
+                    <img src="image4.png" alt="WinTune Network Adapter Settings" class="w-full h-auto block rounded-b-xl object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent opacity-0 group-hover:opacity-80 transition-opacity duration-300 flex items-end p-8 pointer-events-none mt-12">
+                        <h3 class="text-xl font-bold text-white translate-y-4 group-hover:translate-y-0 transition-transform duration-300" data-i18n="screens_open_btn">Открыть скриншот</h3>
+                    </div>
+                </div>
+
+                <!-- Скриншот 6: image5.png -->
+                <div class="reveal rounded-2xl border border-white/10 bg-transparent relative group cursor-pointer hover:-translate-y-2 hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] hover:border-blue-500/30 transition-all duration-500 overflow-hidden" style="transition-delay: 500ms;" onclick="openModal('image5.png', translations[currentLang]['card6_title'])">
+                    <div class="flex items-center px-5 py-3 bg-white/5 border-b border-white/10">
+                        <div class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/80 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/80 shadow-[0_0_8px_rgba(234,179,8,0.5)]"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+                        </div>
+                        <div class="mx-auto text-xs text-slate-400 font-medium tracking-wide" data-i18n="card6_title">WinTune — Характеристики (Информация о системе и ПК)</div>
+                    </div>
+                    <img src="image5.png" alt="WinTune System Specifications" class="w-full h-auto block rounded-b-xl object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent opacity-0 group-hover:opacity-80 transition-opacity duration-300 flex items-end p-8 pointer-events-none mt-12">
+                        <h3 class="text-xl font-bold text-white translate-y-4 group-hover:translate-y-0 transition-transform duration-300" data-i18n="screens_open_btn">Открыть скриншот</h3>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Преимущества (Стеклянные карточки) -->
+        <section id="features" class="container mx-auto px-6 py-24 relative">
+            <div class="text-center mb-20 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-6" data-i18n="features_title">Почему выбирают WinTune?</h2>
+                <p class="text-slate-400 text-lg max-w-2xl mx-auto" data-i18n="features_subtitle">Максимум скорости и контроля над Windows 11 без риска для системы.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Карточка 1 -->
+                <div class="glass-card feature-card reveal rounded-2xl p-8 relative overflow-hidden group">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-violet-500/20 rounded-full blur-2xl group-hover:bg-violet-500/30 transition-colors duration-500"></div>
+                    <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mb-6 text-violet-400 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3" data-i18n="feat_1_title">Приватность под замком</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed" data-i18n="feat_1_desc">Блокируем телеметрию Windows, Edge и стороннего софта. Никакой скрытой слежки и фоновой отправки данных.</p>
+                </div>
+
+                <!-- Карточка 2 -->
+                <div class="glass-card feature-card reveal rounded-2xl p-8 relative overflow-hidden group" style="transition-delay: 100ms;">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl group-hover:bg-blue-500/30 transition-colors duration-500"></div>
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-6 text-blue-400 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3" data-i18n="feat_2_title">Игровой буст и низкий пинг</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed" data-i18n="feat_2_desc">Активируем Game Mode, отключаем лишние службы и тонко настраиваем Wi-Fi/сетевой адаптер для стабильного коннекта.</p>
+                </div>
+
+                <!-- Карточка 3 -->
+                <div class="glass-card feature-card reveal rounded-2xl p-8 relative overflow-hidden group" style="transition-delay: 200ms;">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-fuchsia-500/20 rounded-full blur-2xl group-hover:bg-fuchsia-500/30 transition-colors duration-500"></div>
+                    <div class="w-12 h-12 rounded-xl bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center mb-6 text-fuchsia-400 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3" data-i18n="feat_3_title">Удобный интерфейс</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed" data-i18n="feat_3_desc">Возвращаем классическое контекстное меню, привычный проводник и убираем визуальный шум одним кликом.</p>
+                </div>
+
+                <!-- Карточка 4 -->
+                <div class="glass-card feature-card reveal rounded-2xl p-8 relative overflow-hidden group" style="transition-delay: 300ms;">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl group-hover:bg-emerald-500/30 transition-colors duration-500"></div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6 text-emerald-400 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3" data-i18n="feat_4_title">Чистая система без хлама</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed" data-i18n="feat_4_desc">Безопасно отключаем ненужные компоненты (Xbox Live, печать, факс) и показываем полную сводку о вашем железе.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Подвал (Footer) -->
+    <footer class="border-t border-white/5 bg-[#0a0a0f]/80 backdrop-blur-md pt-16 pb-8 relative z-10">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <span class="text-lg font-bold text-slate-300">WinTune <span class="text-sm font-normal text-slate-500 ml-1">v1.0</span></span>
+            </div>
+            
+            <div class="text-sm text-slate-500 text-center md:text-left" data-i18n="footer_text">
+                &copy; 2024 WinTune. Разработано для Windows 11. Все права защищены.
+            </div>
+
+            <div class="flex gap-4">
+                <a href="#" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all duration-300">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+                </a>
+                <a href="#" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all duration-300">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Модальное окно (Просмотр скриншота) -->
+    <div id="imageModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 md:p-8" onclick="closeModal(event)">
+        <div class="modal-content relative w-full max-w-6xl bg-surface rounded-2xl border border-white/10 shadow-2xl overflow-hidden flex flex-col">
+            <!-- Шапка модалки -->
+            <div class="flex items-center justify-between p-4 border-b border-white/5 bg-white/5">
+                <div class="flex gap-2">
+                    <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                </div>
+                <h3 id="modalTitle" class="text-sm font-medium text-slate-300">Просмотр</h3>
+                <button onclick="closeModal(event)" class="text-slate-400 hover:text-white transition-colors p-1.5 bg-white/5 rounded-lg hover:bg-white/10">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <!-- Картинка модалки -->
+            <div class="p-2 bg-[#1c1c1e] flex items-center justify-center">
+                <img id="modalImage" src="" alt="Скриншот" class="max-w-full max-h-[80vh] object-contain rounded-lg border border-white/5">
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Логика -->
+    <script>
+        // --- 1. Словарь локализации ---
+        const translations = {
+            ru: {
+                nav_features: "Возможности",
+                nav_screenshots: "Интерфейс",
+                header_download: "Скачать",
+                hero_badge: "Версия 1.0 уже доступна",
+                hero_title_1: "WinTune —",
+                hero_title_2: "Ультимативная оптимизация",
+                hero_title_3: "Windows 11",
+                hero_subtitle: "Верните контроль над своей системой: отключите телеметрию, ускорьте игры и настройте интерфейс в один клик. Никакого мусора, только чистый C# и безопасность.",
+                hero_btn_download: "Скачать бесплатно (64-bit)",
+                screens_title: "Интуитивный интерфейс",
+                screens_subtitle: "Все настройки разложены по полочкам. Просто, понятно и безопасно.",
+                card1_title: "WinTune — Windows 11 (Система, Обновления, Панель задач)",
+                card2_title: "WinTune — Windows 11 (Приватность, Игры, Дополнительно)",
+                card3_title: "WinTune — Универсальное (Система и Телеметрия софта)",
+                card4_title: "WinTune — Универсальное (Конфиденциальность и Диски)",
+                card5_title: "WinTune — Сеть (Настройка параметров адаптера)",
+                card6_title: "WinTune — Характеристики (Информация о системе и ПК)",
+                screens_open_btn: "Открыть скриншот",
+                features_title: "Почему выбирают WinTune?",
+                features_subtitle: "Максимум скорости и контроля над Windows 11 без риска для системы.",
+                feat_1_title: "Приватность под замком",
+                feat_1_desc: "Блокируем телеметрию Windows, Edge и стороннего софта. Никакой скрытой слежки и фоновой отправки данных.",
+                feat_2_title: "Игровой буст и низкий пинг",
+                feat_2_desc: "Активируем Game Mode, отключаем лишние службы и тонко настраиваем Wi-Fi/сетевой адаптер для стабильного коннекта.",
+                feat_3_title: "Удобный интерфейс",
+                feat_3_desc: "Возвращаем классическое контекстное меню, привычный проводник и убираем визуальный шум одним кликом.",
+                feat_4_title: "Чистая система без хлама",
+                feat_4_desc: "Безопасно отключаем ненужные компоненты (Xbox Live, печать, факс) и показываем полную сводку о вашем железе.",
+                footer_text: "© 2024 WinTune. Разработано для Windows 11. Все права защищены.",
+                toast_title: "WinTune скоро выйдет!",
+                toast_desc: "🚀 WinTune сейчас находится на финальной стадии разработки! Мы дорабатываем функции для вашей безопасности. Программа будет доступна для скачивания совсем скоро. Спасибо за ваш интерес!",
+                modal_default: "Просмотр"
+            },
+            en: {
+                nav_features: "Features",
+                nav_screenshots: "Interface",
+                header_download: "Download",
+                hero_badge: "Version 1.0 is now available",
+                hero_title_1: "WinTune —",
+                hero_title_2: "Ultimate Optimization",
+                hero_title_3: "Windows 11",
+                hero_subtitle: "Take back control of your system: disable telemetry, boost gaming performance, and customize the interface in one click. No bloatware, just clean C# and security.",
+                hero_btn_download: "Download for free (64-bit)",
+                screens_title: "Intuitive Interface",
+                screens_subtitle: "All settings are neatly organized. Simple, clear, and secure.",
+                card1_title: "WinTune — Windows 11 (System, Updates, Taskbar)",
+                card2_title: "WinTune — Windows 11 (Privacy, Games, Advanced)",
+                card3_title: "WinTune — Universal (System & Software Telemetry)",
+                card4_title: "WinTune — Universal (Privacy & Drives)",
+                card5_title: "WinTune — Network (Adapter Settings)",
+                card6_title: "WinTune — Specifications (System & PC Info)",
+                screens_open_btn: "Open screenshot",
+                features_title: "Why choose WinTune?",
+                features_subtitle: "Maximum speed and control over Windows 11 without risking your system.",
+                feat_1_title: "Privacy under lock and key",
+                feat_1_desc: "We block telemetry from Windows, Edge, and third-party software. No hidden tracking or background data sending.",
+                feat_2_title: "Gaming boost and low ping",
+                feat_2_desc: "Enable Game Mode, disable unnecessary services, and fine-tune your Wi-Fi/network adapter for a stable connection.",
+                feat_3_title: "Convenient interface",
+                feat_3_desc: "Restore the classic context menu, familiar File Explorer, and remove visual clutter in one click.",
+                feat_4_title: "Clean system without clutter",
+                feat_4_desc: "Safely disable unnecessary components (Xbox Live, Printing, Fax) and get a full summary of your hardware.",
+                footer_text: "© 2024 WinTune. Designed for Windows 11. All rights reserved.",
+                toast_title: "WinTune is coming soon!",
+                toast_desc: "🚀 WinTune is currently in its final stages of development! We are polishing the features for your safety. The program will be available for download very soon. Thank you for your interest!",
+                modal_default: "Preview"
+            },
+            es: {
+                nav_features: "Características",
+                nav_screenshots: "Interfaz",
+                header_download: "Descargar",
+                hero_badge: "La versión 1.0 ya está disponible",
+                hero_title_1: "WinTune —",
+                hero_title_2: "Optimización definitiva",
+                hero_title_3: "Windows 11",
+                hero_subtitle: "Recupera el control de tu sistema: desactiva la telemetría, acelera los juegos y configura la interfaz con un solo clic. Sin bloatware, solo C# limpio y seguridad.",
+                hero_btn_download: "Descargar gratis (64-bit)",
+                screens_title: "Interfaz intuitiva",
+                screens_subtitle: "Todas las configuraciones están perfectamente organizadas. Simple, claro y seguro.",
+                card1_title: "WinTune — Windows 11 (Sistema, Actualizaciones, Barra de tareas)",
+                card2_title: "WinTune — Windows 11 (Privacidad, Juegos, Avanzado)",
+                card3_title: "WinTune — Universal (Sistema y Telemetría de software)",
+                card4_title: "WinTune — Universal (Privacidad y Discos)",
+                card5_title: "WinTune — Red (Configuración del adaptador)",
+                card6_title: "WinTune — Especificaciones (Información del sistema y PC)",
+                screens_open_btn: "Abrir captura",
+                features_title: "¿Por qué elegir WinTune?",
+                features_subtitle: "Máxima velocidad y control sobre Windows 11 sin arriesgar tu sistema.",
+                feat_1_title: "Privacidad bajo llave",
+                feat_1_desc: "Bloqueamos la telemetría de Windows, Edge y software de terceros. Sin rastreo oculto ni envío de datos en segundo plano.",
+                feat_2_title: "Impulso para juegos y ping bajo",
+                feat_2_desc: "Activamos el Modo de juego, desactivamos servicios innecesarios y ajustamos finamente el Wi-Fi/adaptador de red para una conexión estable.",
+                feat_3_title: "Interfaz cómoda",
+                feat_3_desc: "Restauramos el menú contextual clásico, el Explorador de siempre y eliminamos el ruido visual con un solo clic.",
+                feat_4_title: "Sistema limpio sin basura",
+                feat_4_desc: "Desactivamos de forma segura componentes innecesarios (Xbox Live, Impresión, Fax) y mostramos un resumen completo de tu hardware.",
+                footer_text: "© 2024 WinTune. Diseñado para Windows 11. Todos los derechos reservados.",
+                toast_title: "¡WinTune llegará pronto!",
+                toast_desc: "🚀 ¡WinTune se encuentra actualmente en su etapa final de desarrollo! Estamos puliendo las funciones para tu seguridad. El programa estará disponible para descargar muy pronto. ¡Gracias por tu interés!",
+                modal_default: "Vista previa"
+            },
+            de: {
+                nav_features: "Funktionen",
+                nav_screenshots: "Benutzeroberfläche",
+                header_download: "Herunterladen",
+                hero_badge: "Version 1.0 ist jetzt verfügbar",
+                hero_title_1: "WinTune —",
+                hero_title_2: "Ultimative Optimierung",
+                hero_title_3: "Windows 11",
+                hero_subtitle: "Holen Sie sich die Kontrolle über Ihr System zurück: Deaktivieren Sie Telemetrie, beschleunigen Sie Spiele und passen Sie die Benutzeroberfläche mit einem Klick an. Keine Bloatware, nur reines C# und Sicherheit.",
+                hero_btn_download: "Kostenlos herunterladen (64-Bit)",
+                screens_title: "Intuitive Benutzeroberfläche",
+                screens_subtitle: "Alle Einstellungen sind übersichtlich geordnet. Einfach, klar und sicher.",
+                card1_title: "WinTune — Windows 11 (System, Updates, Taskleiste)",
+                card2_title: "WinTune — Windows 11 (Datenschutz, Spiele, Erweitert)",
+                card3_title: "WinTune — Universal (System & Software-Telemetrie)",
+                card4_title: "WinTune — Universal (Datenschutz & Laufwerke)",
+                card5_title: "WinTune — Netzwerk (Adaptereinstellungen)",
+                card6_title: "WinTune — Spezifikationen (System- und PC-Informationen)",
+                screens_open_btn: "Screenshot öffnen",
+                features_title: "Warum WinTune wählen?",
+                features_subtitle: "Maximale Geschwindigkeit und Kontrolle über Windows 11 ohne Risiko für Ihr System.",
+                feat_1_title: "Privatsphäre unter Verschluss",
+                feat_1_desc: "Wir blockieren Telemetrie von Windows, Edge und Drittanbieter-Software. Keine versteckte Überwachung und keine Hintergrund-Datenübertragung.",
+                feat_2_title: "Gaming-Boost und niedriger Ping",
+                feat_2_desc: "Aktivieren Sie den Spielmodus, deaktivieren Sie unnötige Dienste und optimieren Sie Wi-Fi/Netzwerkadapter für eine stabile Verbindung.",
+                feat_3_title: "Bequeme Benutzeroberfläche",
+                feat_3_desc: "Wir stellen das klassische Kontextmenü und den vertrauten Datei-Explorer wieder her und entfernen visuelles Durcheinander mit einem Klick.",
+                feat_4_title: "Sauberes System ohne Ballast",
+                feat_4_desc: "Deaktivieren Sie unnötige Komponenten sicher (Xbox Live, Drucken, Fax) und erhalten Sie eine vollständige Übersicht über Ihre Hardware.",
+                footer_text: "© 2024 WinTune. Entwickelt für Windows 11. Alle Rechte vorbehalten.",
+                toast_title: "WinTune kommt bald!",
+                toast_desc: "🚀 WinTune befindet sich derzeit in der finalen Entwicklungsphase! Wir verbessern die Funktionen für Ihre Sicherheit. Das Programm wird in Kürze zum Download verfügbar sein. Vielen Dank für Ihr Interesse!",
+                modal_default: "Vorschau"
+            },
+            fr: {
+                nav_features: "Fonctionnalités",
+                nav_screenshots: "Interface",
+                header_download: "Télécharger",
+                hero_badge: "La version 1.0 est maintenant disponible",
+                hero_title_1: "WinTune —",
+                hero_title_2: "Optimisation ultime",
+                hero_title_3: "Windows 11",
+                hero_subtitle: "Reprenez le contrôle de votre système : désactivez la télémétrie, boostez vos jeux et personnalisez l'interface en un clic. Pas de superflu, juste du C# pur et de la sécurité.",
+                hero_btn_download: "Télécharger gratuitement (64-bit)",
+                screens_title: "Interface intuitive",
+                screens_subtitle: "Tous les paramètres sont bien organisés. Simple, clair et sécurisé.",
+                card1_title: "WinTune — Windows 11 (Système, Mises à jour, Barre des tâches)",
+                card2_title: "WinTune — Windows 11 (Confidentialité, Jeux, Avancé)",
+                card3_title: "WinTune — Universel (Système et Télémétrie des logiciels)",
+                card4_title: "WinTune — Universel (Confidentialité et Disques)",
+                card5_title: "WinTune — Réseau (Paramètres de l'adaptateur)",
+                card6_title: "WinTune — Spécifications (Informations système et PC)",
+                screens_open_btn: "Ouvrir la capture",
+                features_title: "Pourquoi choisir WinTune ?",
+                features_subtitle: "Vitesse et contrôle maximaux sur Windows 11 sans risque pour votre système.",
+                feat_1_title: "Confidentialité sous clé",
+                feat_1_desc: "Nous bloquons la télémétrie de Windows, Edge et des logiciels tiers. Aucun suivi caché ni envoi de données en arrière-plan.",
+                feat_2_title: "Boost de jeu et ping bas",
+                feat_2_desc: "Activez le Mode Jeu, désactivez les services inutiles et ajustez finement le Wi-Fi/l'adaptateur réseau pour une connexion stable.",
+                feat_3_title: "Interface pratique",
+                feat_3_desc: "Nous restaurons le menu contextuel classique, l'Explorateur familier et éliminons l'encombrement visuel en un clic.",
+                feat_4_title: "Système propre sans superflu",
+                feat_4_desc: "Désactivez en toute sécurité les composants inutiles (Xbox Live, Impression, Fax) et obtenez un résumé complet de votre matériel.",
+                footer_text: "© 2024 WinTune. Conçu pour Windows 11. Tous droits réservés.",
+                toast_title: "WinTune arrive bientôt !",
+                toast_desc: "🚀 WinTune est actuellement dans sa phase finale de développement ! Nous peaufinons les fonctionnalités pour votre sécurité. Le programme sera disponible au téléchargement très bientôt. Merci de votre intérêt !",
+                modal_default: "Aperçu"
+            },
+            zh: {
+                nav_features: "核心功能",
+                nav_screenshots: "界面预览",
+                header_download: "下载",
+                hero_badge: "版本 1.0 现已可用",
+                hero_title_1: "WinTune —",
+                hero_title_2: "Windows 11 终极优化工具",
+                hero_title_3: "Windows 11",
+                hero_subtitle: "夺回系统控制权：一键禁用遥测、提升游戏性能并自定义界面。拒绝冗余，只留纯净的 C# 与极致安全。",
+                hero_btn_download: "免费下载 (64-bit)",
+                screens_title: "直观的界面",
+                screens_subtitle: "所有设置分类清晰，简单明了，安全可靠。",
+                card1_title: "WinTune — Windows 11 (系统、更新、任务栏)",
+                card2_title: "WinTune — Windows 11 (隐私、游戏、高级)",
+                card3_title: "WinTune — 通用 (系统与软件遥测)",
+                card4_title: "WinTune — 通用 (隐私与磁盘)",
+                card5_title: "WinTune — 网络 (适配器参数设置)",
+                card6_title: "WinTune — 硬件信息 (系统与PC信息)",
+                screens_open_btn: "查看大图",
+                features_title: "为什么选择 WinTune？",
+                features_subtitle: "在不为系统带来风险的前提下，实现对 Windows 11 的最大速度与控制。",
+                feat_1_title: "隐私牢牢锁定",
+                feat_1_desc: "拦截 Windows、Edge 及第三方软件的遥测数据。杜绝任何隐藏追踪与后台数据上传。",
+                feat_2_title: "游戏加速与低延迟",
+                feat_2_desc: "激活游戏模式，关闭冗余服务，并对 Wi-Fi/网络适配器进行精细调校，实现稳定连接。",
+                feat_3_title: "便捷的界面",
+                feat_3_desc: "一键恢复经典右键菜单、熟悉的资源管理器，并去除视觉干扰。",
+                feat_4_title: "无冗余的纯净系统",
+                feat_4_desc: "安全禁用不必要的组件（Xbox Live、打印、传真），并展示您硬件的完整信息概览。",
+                footer_text: "© 2024 WinTune. 专为 Windows 11 打造。保留所有权利。",
+                toast_title: "WinTune 即将发布！",
+                toast_desc: "🚀 WinTune 目前正处于开发的最后阶段！为了您的安全，我们正在进一步完善功能。程序很快就会开放下载。感谢您的关注！",
+                modal_default: "预览"
+            }
+        };
+
+        let currentLang = 'ru';
+
+        // --- 2. Функция смены языка ---
+        function setLanguage(lang) {
+            if (!translations[lang]) return;
+            currentLang = lang;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+
+            document.getElementById('currentLangText').textContent = lang.toUpperCase();
+            document.getElementById('langMenu').classList.add('hidden');
+        }
+
+        // --- 3. Автоопределение языка при загрузке ---
+        function detectLanguage() {
+            const userLang = navigator.language.slice(0, 2).toLowerCase();
+            if (translations[userLang]) {
+                setLanguage(userLang);
+            } else {
+                setLanguage('en');
+            }
+        }
+
+        // --- 4. Выпадающий список языков ---
+        const langBtn = document.getElementById('langBtn');
+        const langMenu = document.getElementById('langMenu');
+
+        langBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            langMenu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!langBtn.contains(e.target) && !langMenu.contains(e.target)) {
+                langMenu.classList.add('hidden');
+            }
+        });
+
+        // --- 5. Инициализация при загрузке ---
+        document.addEventListener("DOMContentLoaded", () => {
+            detectLanguage();
+
+            const reveals = document.querySelectorAll('.reveal');
+            const revealOptions = {
+                threshold: 0.1,
+                rootMargin: "0px 0px -50px 0px"
+            };
+            const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, revealOptions);
+
+            reveals.forEach(reveal => {
+                revealOnScroll.observe(reveal);
+            });
+        });
+
+        // --- 6. Модальное окно (просмотр скриншотов) ---
+        const modal = document.getElementById('imageModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalImage = document.getElementById('modalImage');
+
+        // Глобальный таймер для отложенного закрытия
+        let closeModalTimer = null;
+
+        function openModal(imageSrc, title) {
+            // Отменяем запланированное закрытие, если оно есть
+            if (closeModalTimer) {
+                clearTimeout(closeModalTimer);
+                closeModalTimer = null;
+            }
+
+            // Сначала устанавливаем контент, потом показываем модалку
+            modalImage.src = imageSrc;
+            modalTitle.textContent = title || translations[currentLang]['modal_default'];
+
+            // Только теперь добавляем класс видимости
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(e) {
+            if (e.target === modal || e.target.closest('button')) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+
+                // Отложенная очистка изображения через 300мс (для плавности анимации)
+                closeModalTimer = setTimeout(() => {
+                    modalImage.src = '';
+                    closeModalTimer = null;
+                }, 300);
+            }
+        }
+
+        // --- 7. Прямое скачивание программы ---
+        const downloadUrl = "https://github.com/Wtfdreamd123/programma/releases/download/%D0%9F%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%B0/WinTune.exe";
+
+        document.querySelectorAll('.download-trigger').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = downloadUrl;
+            });
+        });
+    </script>
+</body>
+</html>
